@@ -1,4 +1,4 @@
-function openModal(courseKey) {
+﻿function openModal(courseKey) {
   try {
     currentCourseKey = courseKey;
     currentCourse    = COURSES[courseKey];
@@ -146,4 +146,77 @@ function closeLessonPanel() {
 
 function handlePanelClick(e) {
   if (e.target === document.getElementById('lessonPanel')) closeLessonPanel();
+}
+
+/* ── REGISTER MODAL ── */
+function openRegisterModal(pkg) {
+  var pkgMap = {
+    trial:   'Học Thử Miễn Phí',
+    '1lv':   '1 Level - 5.000.000đ',
+    '1hk':   '1 Học Kỳ (4 Levels) - 18.000.000đ',
+    giadinh: 'Gói Gia Đình - 4.500.000đ/level/bé'
+  };
+  var sel = document.getElementById('regPackage');
+  if (sel && pkgMap[pkg]) sel.value = pkgMap[pkg];
+  document.getElementById('regSuccess').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'flex';
+  document.getElementById('registerModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeRegisterModal() {
+  document.getElementById('registerModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleRegOverlayClick(e) {
+  if (e.target === document.getElementById('registerModal')) closeRegisterModal();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('registerModal').classList.contains('open')) {
+    closeRegisterModal();
+  }
+});
+
+async function handleRegisterSubmit(e) {
+  e.preventDefault();
+  var btn = document.getElementById('regSubmitBtn');
+  var btnText = document.getElementById('regBtnText');
+  btn.disabled = true;
+  btnText.textContent = 'Đang gửi...';
+
+  var data = {
+    name: document.getElementById('regName').value,
+    phone: document.getElementById('regPhone').value,
+    email: document.getElementById('regEmail').value,
+    age: document.getElementById('regAge').value,
+    course: document.getElementById('regCourse').value,
+    package: document.getElementById('regPackage').value,
+    message: document.getElementById('regMessage').value,
+    _subject: '🎯 Đăng ký học thử - ME Since 1988',
+    _captcha: 'false'
+  };
+
+  try {
+    var res = await fetch('https://formsubmit.co/ajax/chien97666@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    var json = await res.json();
+    if (json.success === 'true' || json.success === true) {
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('regSuccess').style.display = 'flex';
+      document.getElementById('registerForm').reset();
+      showToast('success', 'Đăng ký thành công! 🎉', 'Chúng tôi sẽ liên hệ bạn trong vòng 24 giờ làm việc.');
+    } else {
+      showToast('error', 'Gửi thất bại', 'Vui lòng gọi trực tiếp: 0909.054.204');
+    }
+  } catch (err) {
+    showToast('error', 'Không thể gửi', 'Vui lòng gọi trực tiếp: 0909.054.204');
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = 'Gửi Đăng Ký 🚀';
+  }
 }
